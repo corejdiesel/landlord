@@ -27,6 +27,10 @@ export default defineConfig({
       TEST_DATABASE_URL:
         process.env.TEST_DATABASE_URL ?? "postgresql://letsorted:letsorted@127.0.0.1:5432/letsorted_test",
       SESSION_SECRET: "test-only-secret",
+      // Every adapter runs mocked in tests. Without this the Law Watch fetcher,
+      // which needs no key and so defaults to live, made real network calls —
+      // and a test asserting "nothing changed" passed because the fetch failed.
+      FORCE_MOCKS: "1",
     },
     globalSetup: ["./test/global-setup.ts"],
   },
