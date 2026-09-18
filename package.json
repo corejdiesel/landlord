@@ -1,0 +1,42 @@
+{
+  "name": "let-sorted",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @letsorted/web dev",
+    "build": "pnpm --filter @letsorted/rules build && pnpm --filter @letsorted/web build",
+    "start": "pnpm --filter @letsorted/web start",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:reset": "tsx scripts/migrate.ts --reset",
+    "db:seed": "tsx scripts/seed.ts",
+    "demo": "tsx scripts/demo.ts",
+    "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "^15.1.3",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.2",
+    "vitest": "^2.1.8"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "unrs-resolver",
+      "sharp"
+    ]
+  }
+}
