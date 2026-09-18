@@ -5,6 +5,18 @@ const config: NextConfig = {
   transpilePackages: ["@letsorted/rules"],
   poweredByHeader: false,
   eslint: { ignoreDuringBuilds: true },
+  /**
+   * packages/rules is written with proper ESM specifiers (`./dates.js`), so it
+   * stays importable by plain Node ESM. Webpack needs telling that a `.js`
+   * specifier may resolve to the `.ts` source.
+   */
+  webpack(config) {
+    config.resolve.extensionAlias = {
+      ".js": [".ts", ".tsx", ".js"],
+      ".mjs": [".mts", ".mjs"],
+    };
+    return config;
+  },
   async headers() {
     return [
       {

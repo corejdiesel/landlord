@@ -1,0 +1,252 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular numerals everywhere a figure appears, so columns line up and a
+   ticking countdown does not jitter. */
+time, .num, .countdown, td.num, .money { font-variant-numeric: tabular-nums; }
+
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  margin: 0 0 var(--space-4);
+  letter-spacing: -0.01em;
+}
+
+h1 { font-size: var(--text-2xl); }
+h2 { font-size: var(--text-xl); }
+h3 { font-size: var(--text-lg); }
+
+p { margin: 0 0 var(--space-4); max-width: var(--measure); }
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: var(--accent-hover); }
+
+/* A visible, high-contrast focus ring. Never removed: a large part of this
+   audience navigates by keyboard. */
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+hr { border: 0; border-top: 1px solid var(--rule); margin: var(--space-6) 0; }
+
+/* ---------------------------------------------------------------------------
+   Layout
+   --------------------------------------------------------------------------- */
+
+.wrap { width: 100%; max-width: 72rem; margin: 0 auto; padding: 0 var(--space-5); }
+.wrap-narrow { width: 100%; max-width: 44rem; margin: 0 auto; padding: 0 var(--space-5); }
+.stack > * + * { margin-top: var(--space-4); }
+.stack-lg > * + * { margin-top: var(--space-6); }
+.row { display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; }
+.spread { display: flex; gap: var(--space-4); align-items: center; justify-content: space-between; flex-wrap: wrap; }
+
+.skip-link {
+  position: absolute; left: -9999px; top: 0; z-index: 100;
+  background: var(--accent); color: var(--accent-ink);
+  padding: var(--space-3) var(--space-4);
+}
+.skip-link:focus { left: 0; }
+
+/* ---------------------------------------------------------------------------
+   Components
+   --------------------------------------------------------------------------- */
+
+.card {
+  background: var(--paper-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+}
+
+.card-quiet { background: transparent; box-shadow: none; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: var(--tap-min);
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: var(--accent-ink); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary { background: transparent; color: var(--accent); }
+.btn-secondary:hover { background: var(--accent-wash); color: var(--accent-hover); }
+
+.btn-quiet {
+  background: transparent; color: var(--ink); border-color: var(--rule-strong);
+}
+.btn-quiet:hover { background: var(--paper-sunken); color: var(--ink); }
+
+label { display: block; font-weight: 600; margin-bottom: var(--space-2); }
+.hint { color: var(--ink-muted); font-size: var(--text-sm); margin: 0 0 var(--space-2); }
+
+input[type="text"], input[type="email"], input[type="number"], input[type="date"],
+input[type="password"], input[type="search"], select, textarea {
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: var(--space-3);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  color: var(--ink);
+  font: inherit;
+}
+input::placeholder, textarea::placeholder { color: var(--ink-faint); }
+
+fieldset { border: 1px solid var(--rule); border-radius: var(--radius); padding: var(--space-4); margin: 0 0 var(--space-4); }
+legend { font-weight: 600; padding: 0 var(--space-2); }
+
+/* Status. Colour is never the only carrier: each pill has a glyph and a word. */
+.status {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius);
+  border: 1px solid currentColor;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.status-ok { color: var(--ok); background: var(--ok-wash); }
+.status-warn { color: var(--warn); background: var(--warn-wash); }
+.status-danger { color: var(--danger); background: var(--danger-wash); }
+.status-info { color: var(--info); background: var(--info-wash); }
+.status-glyph { font-weight: 700; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: var(--space-3); border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-weight: 600; color: var(--ink-muted); font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* The hero countdown. Serif, large, tabular. */
+.countdown {
+  font-family: var(--font-serif);
+  font-size: var(--text-hero);
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.countdown-unit { font-size: var(--text-lg); font-family: var(--font-sans); color: var(--ink-muted); font-weight: 400; }
+
+/* The stamp: a dated mark on a completed obligation. Slightly imperfect on
+   purpose — a perfectly square stamp reads as a badge, not a stamp. */
+.stamp {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid var(--ok);
+  border-radius: var(--radius);
+  color: var(--ok);
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  transform: rotate(-2.5deg);
+  opacity: 0.85;
+}
+.stamp-date { font-size: var(--text-sm); letter-spacing: 0.04em; font-weight: 600; }
+
+.provenance {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+  border-left: 3px solid var(--rule-strong);
+  padding-left: var(--space-3);
+}
+
+.footer-note {
+  font-size: var(--text-sm);
+  color: var(--ink-muted);
+  border-top: 1px solid var(--rule);
+  padding-top: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.dev-banner {
+  background: var(--warn-wash);
+  color: var(--warn);
+  border-bottom: 1px solid currentColor;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Motion — minimal, and genuinely off when asked
+   --------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .stamp { transform: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   Print — a paper route exists for the government service, so our packs and
+   the Defence File must print properly, not as a screenshot of a web page.
+   --------------------------------------------------------------------------- */
+
+@media print {
+  @page { size: A4; margin: 18mm 16mm; }
+
+  :root {
+    --paper: #fff; --paper-raised: #fff; --paper-sunken: #fff;
+    --ink: #000; --ink-muted: #333; --rule: #999; --accent: #000;
+  }
+
+  body { font-size: 11pt; line-height: 1.45; background: #fff; color: #000; }
+
+  .no-print, nav, .dev-banner, .btn, form, .skip-link { display: none !important; }
+  .print-only { display: block !important; }
+
+  .card { border: 1px solid #999; box-shadow: none; break-inside: avoid; }
+  h1, h2, h3 { break-after: avoid; }
+  table { break-inside: auto; }
+  tr { break-inside: avoid; }
+  thead { display: table-header-group; }
+
+  /* Print the destination of a link, so a paper pack is still usable. */
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 9pt; color: #333; }
+
+  .countdown { font-size: 28pt; }
+}
+
+.print-only { display: none; }
