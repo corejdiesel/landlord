@@ -168,6 +168,17 @@ export function ObligationRow({ obligation }: { obligation: Obligation }) {
   );
 }
 
+/**
+ * Pluralise a countable noun as a whole phrase.
+ *
+ * Splitting a word across JSX expressions ("propert" + "ies") renders fine but
+ * puts a comment node mid-word, which some screen readers announce as two
+ * fragments. Cheap to avoid.
+ */
+export function plural(count: number, singular: string, pluralForm: string): string {
+  return `${count} ${count === 1 ? singular : pluralForm}`;
+}
+
 /** Money, from pennies. The only renderer for a monetary value. */
 export function formatPennies(pennies: bigint): string {
   const negative = pennies < 0n;

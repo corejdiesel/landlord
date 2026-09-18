@@ -20,6 +20,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             <Link href="/dashboard">Dashboard</Link>
             <Link href="/properties">Properties</Link>
             <Link href="/documents">Documents</Link>
+            <Link href="/clients">Clients</Link>
             {session.isAdmin ? <Link href="/admin/law-watch">Law Watch</Link> : null}
             <form action={signOutAction}>
               <button className="btn btn-quiet" type="submit" style={{ minHeight: "auto", padding: "var(--space-2) var(--space-3)" }}>

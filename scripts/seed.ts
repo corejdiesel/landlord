@@ -115,6 +115,7 @@ async function seed(): Promise<void> {
     const okonjo = await createAccount(client, "ade@example.test", "Ade Okonjo", "Ade & Nkem Okonjo", "landlord");
     await ctx(client, okonjo.accountId, okonjo.userId);
 
+    await client.query("update accounts set plan = 'landlord' where id = $1", [okonjo.accountId]);
     const ade = await insertEntity(client, okonjo.accountId, "Ade Okonjo", "individual");
     const nkem = await insertEntity(client, okonjo.accountId, "Nkem Okonjo", "individual");
 
@@ -160,6 +161,7 @@ async function seed(): Promise<void> {
     const brightside = await createAccount(client, "ops@brightside.test", "Dawn Reilly", "Brightside Property Ltd", "landlord");
     await ctx(client, brightside.accountId, brightside.userId);
 
+    await client.query("update accounts set plan = 'portfolio' where id = $1", [brightside.accountId]);
     const company = await insertEntity(client, brightside.accountId, "Brightside Property Ltd", "company", "09876543");
     const hmo = await insertProperty(client, brightside.accountId, {
       line1: "88 Wellington Street", town: "Manchester", postcode: "M14 5TP",
@@ -231,6 +233,10 @@ async function seed(): Promise<void> {
     // 4. Kerr & Co — a letting agent with client landlords
     // ---------------------------------------------------------------------
     const agent = await createAccount(client, "hello@kerrandco.test", "Marie Kerr", "Kerr & Co Lettings", "agent", true);
+    // Without this the workspace reads "4 of 1 properties", because the default
+    // plan is free. An agent account with clients is on the agent plan.
+    await ctx(client, agent.accountId, agent.userId);
+    await client.query("update accounts set plan = 'agent' where id = $1", [agent.accountId]);
 
     // The GRANT is created by the landlord, never by the agent. Seeding it any
     // other way would not survive the RLS policy, which is the point.
