@@ -29,6 +29,11 @@
   header comment.
 - Every new table needs: `created_at`, `updated_at`, `deleted_at`, RLS enabled
   AND forced, a policy, a `live_*` view, and a test.
+- **Adding a column to a table with a `live_*` view? Recreate the view in the
+  same migration.** `create view x as select *` resolves the star once, at
+  creation time, and stores the column list. A column added later is simply not
+  in the view, and the failure is a confusing "column does not exist" against a
+  column you can see in the table. This has already bitten once (0010 → 0011).
 
 ## Testing
 
