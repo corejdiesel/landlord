@@ -3,6 +3,8 @@ export * from "./dates.js";
 export * from "./predicate.js";
 export * from "./engine.js";
 export * from "./radar.js";
+export * from "./drift.js";
+export * from "./rehearsal.js";
 export * from "./data/rules.js";
 export * from "./data/timetable.js";
 export * from "./data/fees.js";
