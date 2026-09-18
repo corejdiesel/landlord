@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createHash } from "node:crypto";
 import { withoutAccount } from "../../../lib/db";
+import { icsToken } from "../../../lib/ics-token";
 import { buildIcsFeed } from "../../../lib/reminders";
 import { today } from "../../../lib/env";
 
@@ -46,10 +46,3 @@ export async function GET(request: Request): Promise<NextResponse> {
   });
 }
 
-/** Derive the feed token so it cannot be swapped with the inbound-mail token. */
-export function icsToken(inboundToken: string): string {
-  return createHash("sha256")
-    .update(`ics:${process.env.SESSION_SECRET ?? "dev-only-insecure-secret-do-not-ship"}:${inboundToken}`)
-    .digest("hex")
-    .slice(0, 32);
-}

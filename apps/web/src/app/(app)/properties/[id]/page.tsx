@@ -102,6 +102,21 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
       </section>
 
       <section className="stack">
+        <h2>Also on this property</h2>
+        <div className="row">
+          <Link className="btn btn-secondary" href={`/properties/${id}/possession`}>
+            Possession readiness
+          </Link>
+          <Link className="btn btn-secondary" href={`/properties/${id}/defence-file`}>
+            Your record
+          </Link>
+          <Link className="btn btn-secondary" href={`/properties/${id}/drift`}>
+            Update GOV.UK entry
+          </Link>
+        </div>
+      </section>
+
+      <section className="stack">
         <h2>What is due</h2>
         {obligations.length === 0 ? (
           <Card><p style={{ margin: 0 }}>Nothing to track yet. Add the letting details above.</p></Card>
