@@ -60,6 +60,87 @@ describe("the security model is actually switched on", () => {
   });
 });
 
+/**
+ * SECURITY DEFINER does NOT bypass RLS when the table has FORCE ROW LEVEL
+ * SECURITY, because FORCE binds the owner too. Every time a pre-context
+ * function was written assuming otherwise it silently returned zero rows:
+ * sign-in reported a wrong password for a correct one (migration 0008), inbound
+ * email routed nowhere (0009), and every tenant passport 404ed while the
+ * write-side twin worked fine, which is why it went unnoticed (0012).
+ *
+ * Zero rows is the worst failure mode available: it looks like "not found"
+ * rather than "broken".
+ */
+const RLS_PROTECTED_TABLES = [
+  "accounts", "users", "memberships", "sessions", "properties", "tenancies",
+  "documents", "registrations", "passports", "pulse_requests", "pulse_responses",
+  "radar_signups", "landlord_entities", "drift_items",
+];
+
+/** True when a definer function reads a protected table without raising the flag. */
+export function definerLooksUnsafe(functionDefinition: string): boolean {
+  const body = functionDefinition.toLowerCase();
+  if (!body.includes("security definer")) return false;
+  const touches = RLS_PROTECTED_TABLES.some((t) =>
+    new RegExp(`(from|join|into|update)\\s+${t}\\b`).test(body));
+  if (!touches) return false;
+  return !body.includes("app.bootstrap");
+};
+
+describe("SECURITY DEFINER functions cannot forget the bootstrap flag", () => {
+  it("flags a definer function that reads a protected table without the flag", () => {
+    // Proves the detector is not vacuous. This is the exact shape of the bug
+    // that shipped three times.
+    expect(definerLooksUnsafe(`
+      CREATE FUNCTION public_passport(p_slug text) RETURNS SETOF record
+        LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO public
+        AS $$ select p.id from passports p where p.slug = p_slug $$;
+    `)).toBe(true);
+  });
+
+  it("accepts the same function once it raises the flag", () => {
+    expect(definerLooksUnsafe(`
+      CREATE FUNCTION public_passport(p_slug text) RETURNS SETOF record
+        LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path TO public
+        AS $$ begin
+          perform set_config('app.bootstrap', 'on', true);
+          return query select p.id from passports p where p.slug = p_slug;
+          perform set_config('app.bootstrap', 'off', true);
+        end $$;
+    `)).toBe(false);
+  });
+
+  it("ignores a definer function that touches no protected table", () => {
+    expect(definerLooksUnsafe(`
+      CREATE FUNCTION app_is_bootstrapping() RETURNS boolean
+        LANGUAGE sql STABLE SECURITY DEFINER
+        AS $$ select coalesce(current_setting('app.bootstrap', true), 'off') = 'on' $$;
+    `)).toBe(false);
+  });
+
+  it("ignores an ordinary invoker function", () => {
+    expect(definerLooksUnsafe(`
+      CREATE FUNCTION whatever() RETURNS SETOF record LANGUAGE sql
+        AS $$ select id from properties $$;
+    `)).toBe(false);
+  });
+
+  it("finds no unsafe definer function in the live schema", async () => {
+    await clearContext(client);
+    const { rows } = await client.query<{ proname: string; src: string }>(
+      `select p.proname, pg_get_functiondef(p.oid) as src
+         from pg_proc p
+         join pg_namespace n on n.oid = p.pronamespace
+        where n.nspname = 'public' and p.prosecdef`,
+    );
+
+    expect(rows.length).toBeGreaterThan(5);
+
+    const unsafe = rows.filter((r) => definerLooksUnsafe(r.src)).map((r) => r.proname);
+    expect(unsafe, "these definer functions will silently return zero rows").toEqual([]);
+  });
+});
+
 describe("a connection with no context sees nothing", () => {
   it.each(ACCOUNT_SCOPED_TABLES)("returns zero rows from %s", async (table) => {
     await clearContext(client);

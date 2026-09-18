@@ -113,6 +113,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           <Link className="btn btn-secondary" href={`/properties/${id}/drift`}>
             Update GOV.UK entry
           </Link>
+          <Link className="btn btn-secondary" href={`/properties/${id}/sharing`}>
+            Sharing
+          </Link>
         </div>
       </section>
 
