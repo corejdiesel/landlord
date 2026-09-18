@@ -1,5 +1,5 @@
 import { CURRENT_TIMETABLE, timetableFor, type RegionTimetable } from "./data/timetable.js";
-import { addDays, addMonths, daysBetween, isAfter, isOnOrAfter } from "./dates.js";
+import { addDays, addMonths, daysBetween, formatUkLong, isAfter, isOnOrAfter } from "./dates.js";
 import { buildFactBag, evaluatePredicate } from "./predicate.js";
 import type {
   ComplianceDocument,
@@ -138,7 +138,7 @@ function deriveObligation(
         satisfied,
         satisfiedBy: landlord.landlord_registration_number,
         reason: satisfied
-          ? `Landlord entry recorded${landlord.registered_on ? ` on ${landlord.registered_on}` : ""}.`
+          ? `Landlord entry recorded${landlord.registered_on ? ` on ${formatUkLong(landlord.registered_on)}` : ""}.`
           : "No landlord registration number recorded yet.",
       };
     }
@@ -165,7 +165,7 @@ function deriveObligation(
         satisfied,
         satisfiedBy: null,
         reason: dueOn
-          ? `Entry renews on ${dueOn}. Renewal is manual — the government will not take it automatically.`
+          ? `Entry renews on ${formatUkLong(dueOn)}. Renewal is manual — the government will not take it automatically.`
           : "Renewal date will be set once the first dwelling entry is recorded.",
       };
     }
@@ -188,7 +188,7 @@ function deriveObligation(
         satisfiedBy: gas.id,
         reason:
           registration.status === "active"
-            ? `Gas record issued ${gas.issued_on} must be on your database entry by ${dueOn}.`
+            ? `Gas record issued ${formatUkLong(gas.issued_on)} must be on your database entry by ${formatUkLong(dueOn)}.`
             : "Not applicable until the dwelling entry is active.",
       };
     }
@@ -204,8 +204,8 @@ function deriveObligation(
         reason: !gas
           ? "No gas safety record on file."
           : satisfied
-            ? `Gas safety record valid until ${dueOn}.`
-            : `Gas safety record expired on ${dueOn}.`,
+            ? `Gas safety record valid until ${formatUkLong(dueOn!)}.`
+            : `Gas safety record expired on ${formatUkLong(dueOn!)}.`,
         inBreachNow: !gas,
       };
     }
@@ -221,8 +221,8 @@ function deriveObligation(
         reason: !eicr
           ? "No electrical installation condition report on file."
           : satisfied
-            ? `Electrical report valid until ${dueOn}.`
-            : `Electrical report expired on ${dueOn}.`,
+            ? `Electrical report valid until ${formatUkLong(dueOn!)}.`
+            : `Electrical report expired on ${formatUkLong(dueOn!)}.`,
         inBreachNow: !eicr,
       };
     }
@@ -237,7 +237,7 @@ function deriveObligation(
         dueOn,
         satisfied: false,
         satisfiedBy: null,
-        reason: `The report dated ${eicr.issued_on} was unsatisfactory. Remedial work is due by ${dueOn}.`,
+        reason: `The report dated ${formatUkLong(eicr.issued_on)} was unsatisfactory. Remedial work is due by ${formatUkLong(dueOn)}.`,
       };
     }
 
@@ -254,10 +254,10 @@ function deriveObligation(
         reason: !epc
           ? "No EPC on file."
           : !inDate
-            ? `EPC expired on ${dueOn}.`
+            ? `EPC expired on ${formatUkLong(dueOn!)}.`
             : !ratingOk
               ? `EPC rating ${rating} is below the minimum of E. You need an exemption or improvements.`
-              : `EPC rating ${rating}, valid until ${dueOn}.`,
+              : `EPC rating ${rating}, valid until ${formatUkLong(dueOn!)}.`,
         inBreachNow: !epc || !ratingOk,
       };
     }
@@ -272,8 +272,8 @@ function deriveObligation(
         reason: !expires
           ? "You have told us a licence is needed, but none is recorded."
           : satisfied
-            ? `Licence valid until ${expires}.`
-            : `Licence expired on ${expires}.`,
+            ? `Licence valid until ${formatUkLong(expires!)}.`
+            : `Licence expired on ${formatUkLong(expires!)}.`,
         inBreachNow: !expires,
       };
     }
@@ -288,7 +288,7 @@ function deriveObligation(
         satisfied: protectedOk && infoOk,
         satisfiedBy: null,
         reason: protectedOk && infoOk
-          ? `Deposit protected on ${tenancy.deposit_protected_on} and prescribed information served.`
+          ? `Deposit protected on ${formatUkLong(tenancy.deposit_protected_on!)} and prescribed information served.`
           : !protectedOk
             ? "Deposit is not recorded as protected in a scheme."
             : "Deposit is protected but the prescribed information is not recorded as served.",
@@ -309,8 +309,8 @@ function deriveObligation(
         reason: !done
           ? "No right to rent check recorded."
           : followUp
-            ? `Follow-up check due by ${followUp}.`
-            : `Checked on ${tenancy.right_to_rent_checked_on}.`,
+            ? `Follow-up check due by ${formatUkLong(followUp)}.`
+            : `Checked on ${formatUkLong(tenancy.right_to_rent_checked_on!)}.`,
         inBreachNow: !done,
       };
     }
@@ -323,7 +323,7 @@ function deriveObligation(
         satisfied: tested,
         satisfiedBy: null,
         reason: tested
-          ? `Alarms recorded as tested on ${tenancy.alarms_tested_on}.`
+          ? `Alarms recorded as tested on ${formatUkLong(tenancy.alarms_tested_on!)}.`
           : "No record that the alarms were tested on the first day of the tenancy.",
         inBreachNow: !tested,
       };

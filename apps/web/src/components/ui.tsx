@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { formatUkLong, type Obligation, type ObligationState, type RuleSource, type VerificationStatus } from "@letsorted/rules";
 
 /**
@@ -9,10 +9,13 @@ import { formatUkLong, type Obligation, type ObligationState, type RuleSource, t
  *  - every countdown has a screen-reader label spelling out the date
  */
 
-export function Card({ children, className = "", as: Tag = "div" }: {
-  children: ReactNode; className?: string; as?: "div" | "section" | "article" | "li";
+export function Card({ children, className = "", as: Tag = "div", style }: {
+  children: ReactNode;
+  className?: string;
+  as?: "div" | "section" | "article" | "li";
+  style?: CSSProperties;
 }) {
-  return <Tag className={`card ${className}`}>{children}</Tag>;
+  return <Tag className={`card ${className}`} style={style}>{children}</Tag>;
 }
 
 export type StatusTone = "ok" | "warn" | "danger" | "info";

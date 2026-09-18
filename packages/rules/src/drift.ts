@@ -1,4 +1,4 @@
-import { addDays, daysBetween } from "./dates.js";
+import { addDays, daysBetween, formatUkLong } from "./dates.js";
 
 /**
  * The 28-Day Drift Clock.
@@ -153,7 +153,7 @@ export function driftStatus(item: { due_on: string; closed_at?: string | null },
       state: "overdue",
       days_remaining: remaining,
       message:
-        `Your GOV.UK entry has been out of date since ${item.due_on}. ` +
+        `Your GOV.UK entry has been out of date since ${formatUkLong(item.due_on)}. ` +
         `Update it as soon as you can.`,
     };
   }
@@ -169,7 +169,7 @@ export function driftStatus(item: { due_on: string; closed_at?: string | null },
   return {
     state: "open",
     days_remaining: remaining,
-    message: `Your GOV.UK entry is now out of date. Update it by ${item.due_on}.`,
+    message: `Your GOV.UK entry is now out of date. Update it by ${formatUkLong(item.due_on)}.`,
   };
 }
 
@@ -216,4 +216,36 @@ export function resolvableDriftItems(
       return normalise(snapshot[field]) === normalise(current[field]);
     })
     .map((i) => i.field);
+}
+
+/**
+ * Render a drift value for a human.
+ *
+ * Drift items store raw column values, which is right for comparison and wrong
+ * for display: a rent of "260000" is pennies, and showing it as-is tells the
+ * landlord their rent is a quarter of a million pounds.
+ */
+export function formatDriftValue(field: DriftField, value: string | null): string {
+  if (value === null || value === "") return "not set";
+
+  switch (field) {
+    case "rent_pennies": {
+      const pennies = BigInt(value);
+      const pounds = pennies / 100n;
+      const rem = pennies % 100n;
+      const withCommas = pounds.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      return `£${withCommas}${rem === 0n ? "" : `.${rem.toString().padStart(2, "0")}`}`;
+    }
+    case "gas_certificate_issued_on":
+      return /^\d{4}-\d{2}-\d{2}$/.test(value) ? formatUkLong(value) : value;
+    case "bills_included":
+    case "has_gas":
+      return value === "yes" ? "Yes" : "No";
+    case "rent_frequency":
+      return value.replace(/_/g, " ");
+    case "licence_kind":
+      return value.replace(/_/g, " ");
+    default:
+      return value;
+  }
 }

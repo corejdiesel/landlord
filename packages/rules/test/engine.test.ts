@@ -491,3 +491,50 @@ describe("informational rules never become obligations", () => {
     }
   });
 });
+
+describe("user-facing copy never leaks raw machine values", () => {
+  /**
+   * These caught real bugs: reasons rendered "due by 2027-01-28" and a drift
+   * item told a landlord their rent was "260000". Both read as broken software
+   * to exactly the audience least inclined to give it the benefit of the doubt.
+   */
+  const scenarios = [
+    anInput({ today: "2026-09-18" }),
+    anInput({ today: "2027-03-15" }),
+    compliantScenario(),
+    anInput({
+      today: "2026-09-18",
+      documents: [
+        aDocument({ id: "g", kind: "gas_safety_record", issued_on: "2026-06-01", expires_on: "2027-06-01" }),
+        aDocument({ id: "e", kind: "eicr", issued_on: "2026-09-10", expires_on: "2031-09-10", outcome: "unsatisfactory" }),
+        aDocument({ id: "p", kind: "epc", issued_on: "2020-01-01", expires_on: "2030-01-01", epc_rating: "F" }),
+      ],
+      property: aProperty({ licence_kind: "selective", licence_expires_on: "2026-01-01" }),
+    }),
+  ];
+
+  it("renders no ISO dates, only long UK dates", () => {
+    for (const input of scenarios) {
+      for (const o of evaluate(input, ALL_RULES, { includeUnverified: true })) {
+        expect(o.reason, `${o.rule_id}: ${o.reason}`).not.toMatch(/\d{4}-\d{2}-\d{2}/);
+      }
+    }
+  });
+
+  it("never prints an undefined or null into a sentence", () => {
+    for (const input of scenarios) {
+      for (const o of evaluate(input, ALL_RULES, { includeUnverified: true })) {
+        expect(o.reason, o.rule_id).not.toMatch(/undefined|null|NaN|\[object/);
+        expect(o.title, o.rule_id).not.toMatch(/undefined|null/);
+      }
+    }
+  });
+
+  it("uses no snake_case identifiers in anything a landlord reads", () => {
+    for (const input of scenarios) {
+      for (const o of evaluate(input, ALL_RULES, { includeUnverified: true })) {
+        expect(o.reason, o.rule_id).not.toMatch(/[a-z]+_[a-z]+/);
+      }
+    }
+  });
+});

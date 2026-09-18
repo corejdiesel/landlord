@@ -32,6 +32,13 @@ const schema = z.object({
   TIME_TRAVEL_DATE: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   /** Allows the network-using adapters to be forced off even with keys present. */
   FORCE_MOCKS: z.enum(["0", "1"]).default("0"),
+  /**
+   * Time travel is ignored in a production build unless this is set. A demo
+   * build runs with NODE_ENV=production, so without an explicit opt-in the
+   * date silently reverts to real today and every countdown in the demo is
+   * wrong — which is exactly what happened the first time this was tried.
+   */
+  ALLOW_TIME_TRAVEL: z.enum(["0", "1"]).default("0"),
 });
 
 export type Env = z.infer<typeof schema>;
@@ -97,7 +104,8 @@ export function mockedAdapters(e: Env = env()): AdapterName[] {
  * is impossible to demo or test without being able to move the date.
  */
 export function today(e: Env = env()): string {
-  if (e.TIME_TRAVEL_DATE && e.NODE_ENV !== "production") return e.TIME_TRAVEL_DATE;
+  const travelAllowed = e.NODE_ENV !== "production" || e.ALLOW_TIME_TRAVEL === "1";
+  if (e.TIME_TRAVEL_DATE && travelAllowed) return e.TIME_TRAVEL_DATE;
   const fmt = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit",
   });

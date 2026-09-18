@@ -18,6 +18,7 @@ function baseEnv(): Env {
     POSTCODES_IO_URL: "https://api.postcodes.io",
     EPC_API_URL: "https://epc.test", INBOUND_EMAIL_DOMAIN: "certs.test",
     STORAGE_DIR: ".storage", MAIL_DIR: ".mail", FORCE_MOCKS: "0",
+    ALLOW_TIME_TRAVEL: "0",
   };
 }
 
@@ -55,10 +56,20 @@ describe("environment and adapter selection", () => {
     expect(today({ ...baseEnv(), TIME_TRAVEL_DATE: "2027-03-14" })).toBe("2027-03-14");
   });
 
-  it("ignores time travel in production", () => {
+  it("ignores time travel in production unless explicitly allowed", () => {
     const value = today({ ...baseEnv(), NODE_ENV: "production", TIME_TRAVEL_DATE: "2027-03-14" });
     expect(value).not.toBe("2027-03-14");
     expect(value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it("allows time travel in a production build when opted in, which is how demos run", () => {
+    // A demo build runs NODE_ENV=production. Without this opt-in the date
+    // silently reverts to real today and every countdown in the demo is wrong.
+    const value = today({
+      ...baseEnv(), NODE_ENV: "production",
+      TIME_TRAVEL_DATE: "2027-03-14", ALLOW_TIME_TRAVEL: "1",
+    });
+    expect(value).toBe("2027-03-14");
   });
 });
 

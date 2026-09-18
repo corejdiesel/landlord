@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   advanceSnapshot, diffRegisteredFacts, driftReminderDates, driftStatus,
-  DRIFT_FIELD_LABELS, DRIFT_WINDOW_DAYS, openDriftItems, resolvableDriftItems,
-  type RegisteredFacts,
+  DRIFT_FIELD_LABELS, DRIFT_WINDOW_DAYS, formatDriftValue, openDriftItems,
+  resolvableDriftItems, type RegisteredFacts,
 } from "../src/drift.js";
 
 const snapshot: RegisteredFacts = {
@@ -210,5 +210,46 @@ describe("the snapshot is the government's record, not our history", () => {
     expect(afterSecond).toHaveLength(1);
     expect(afterSecond[0]!.old_value).toBe("125000");
     expect(afterSecond[0]!.new_value).toBe("135000");
+  });
+});
+
+describe("rendering drift values for a human", () => {
+  it("renders rent pennies as pounds, not as a raw integer", () => {
+    // This is the bug it exists for: "260000" told a landlord their rent was
+    // two hundred and sixty thousand pounds.
+    expect(formatDriftValue("rent_pennies", "260000")).toBe("£2,600");
+    expect(formatDriftValue("rent_pennies", "125050")).toBe("£1,250.50");
+    expect(formatDriftValue("rent_pennies", "0")).toBe("£0");
+  });
+
+  it("renders a certificate date in long UK form", () => {
+    expect(formatDriftValue("gas_certificate_issued_on", "2026-10-05")).toBe("5 October 2026");
+  });
+
+  it("renders booleans as Yes and No", () => {
+    expect(formatDriftValue("bills_included", "yes")).toBe("Yes");
+    expect(formatDriftValue("has_gas", "no")).toBe("No");
+  });
+
+  it("removes snake_case from enum values", () => {
+    expect(formatDriftValue("rent_frequency", "four_weekly")).toBe("four weekly");
+    expect(formatDriftValue("licence_kind", "hmo_mandatory")).toBe("hmo mandatory");
+  });
+
+  it("says 'not set' rather than showing an empty gap", () => {
+    expect(formatDriftValue("property_manager_name", null)).toBe("not set");
+    expect(formatDriftValue("property_manager_name", "")).toBe("not set");
+  });
+
+  it("passes plain text through unchanged", () => {
+    expect(formatDriftValue("property_manager_name", "Acme Lettings")).toBe("Acme Lettings");
+  });
+});
+
+describe("drift messages read as English", () => {
+  it("uses long UK dates, never ISO", () => {
+    for (const today of ["2027-01-17", "2027-02-10", "2027-02-14", "2027-03-01"]) {
+      expect(driftStatus({ due_on: "2027-02-14" }, today).message).not.toMatch(/\d{4}-\d{2}-\d{2}/);
+    }
   });
 });
