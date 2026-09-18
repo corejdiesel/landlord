@@ -85,7 +85,7 @@ pnpm install
 pnpm db:migrate
 pnpm dev                         # http://localhost:3000
 pnpm test                        # 257 tests
-pnpm ci                          # lint && typecheck && test && build
+pnpm check                       # lint && typecheck && test && build
 ```
 
 Time travel, essential for a product about deadlines:

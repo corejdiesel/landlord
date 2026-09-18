@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { REGION_LABELS, formatUkLong } from "@letsorted/rules";
+import { formatUkLong } from "@letsorted/rules";
 import { Card, LegalFooter, Money, Status, plural } from "../../../components/ui";
 import { requireSession } from "../../../lib/auth";
 import { withAccount } from "../../../lib/db";

@@ -27,12 +27,23 @@ export default async function DriftPage({ params }: { params: Promise<{ id: stri
       <h1 style={{ margin: 0 }}>Update your GOV.UK entry</h1>
 
       {items.length === 0 ? (
+        /**
+         * Also the state you land in immediately after confirming: a server
+         * action re-renders this route, which would otherwise wipe the success
+         * message out from under the person who just acted. So the empty state
+         * has to acknowledge the work, not just report emptiness.
+         */
         <Card className="stack">
           <Status tone="ok">Nothing to update</Status>
           <p style={{ margin: 0 }}>
-            As far as we know, your entry matches what you have told us. We will tell
-            you the moment that changes.
+            Your GOV.UK entry matches what you have told us. Anything you have just
+            confirmed is recorded, and we will tell you the moment something changes.
           </p>
+          <div>
+            <Link className="btn btn-secondary" href={`/properties/${id}/defence-file`}>
+              See your record
+            </Link>
+          </div>
         </Card>
       ) : (
         <>

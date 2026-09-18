@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { formatDriftValue, formatUkLong, type Obligation } from "@letsorted/rules";
-import { Card, Countdown, LegalFooter, Money, ObligationRow, Status, plural, toneForState } from "../../../components/ui";
+import { Card, Countdown, LegalFooter, Money, ObligationRow, Status, toneForState } from "../../../components/ui";
 import { requireSession } from "../../../lib/auth";
 import { withAccount } from "../../../lib/db";
 import { evaluateAccount, propertyLabel } from "../../../lib/repository";

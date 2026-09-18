@@ -1,5 +1,4 @@
 import { createHash } from "node:crypto";
-import type { PoolClient } from "pg";
 import { addDays } from "@letsorted/rules";
 import { adapters, type DocumentExtraction } from "../adapters/index";
 import { appendLedger, withAccount, type AccountContext } from "./db";

@@ -1,5 +1,4 @@
 import { Client } from "pg";
-import { migrate } from "../../scripts/migrate.js";
 
 export const TEST_DATABASE_URL =
   process.env.TEST_DATABASE_URL ?? "postgresql://letsorted:letsorted@127.0.0.1:5432/letsorted_test";

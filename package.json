@@ -19,9 +19,11 @@
     "db:reset": "tsx scripts/migrate.ts --reset",
     "db:seed": "tsx scripts/seed.ts",
     "demo": "tsx scripts/demo.ts",
-    "ci": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "e2e:db": "DATABASE_URL=postgresql://letsorted:letsorted@127.0.0.1:5432/letsorted_e2e tsx scripts/migrate.ts --reset",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^9.17.0",
     "@playwright/test": "^1.49.1",
     "@types/node": "^22.10.2",

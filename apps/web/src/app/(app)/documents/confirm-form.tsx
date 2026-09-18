@@ -49,6 +49,16 @@ export function ConfirmExtraction({ document, properties }: {
     return score !== undefined && score < LOW_CONFIDENCE;
   };
 
+  /**
+   * Scope every element id to this document.
+   *
+   * Several pending documents render several of these forms at once. With fixed
+   * ids the page carried duplicate IDs, so a <label for> could bind to another
+   * document's field — a screen reader user would be editing the wrong
+   * certificate without any indication. Caught by axe in the e2e run.
+   */
+  const fieldId = (name: string) => `${name}-${document.id}`;
+
   return (
     <Card className="stack">
       <div className="spread">
@@ -65,8 +75,8 @@ export function ConfirmExtraction({ document, properties }: {
           <div role="alert"><Status tone="danger">{state.error}</Status></div>
         ) : null}
 
-        <Field label="What kind of document is it?" flagged={flag("kind")} id="kind">
-          <select id="kind" name="kind" value={kind} onChange={(e) => setKind(e.target.value)}>
+        <Field label="What kind of document is it?" flagged={flag("kind")} id={fieldId("kind")}>
+          <select id={fieldId("kind")} name="kind" value={kind} onChange={(e) => setKind(e.target.value)}>
             <option value="gas_safety_record">Gas safety record</option>
             <option value="eicr">Electrical safety report (EICR)</option>
             <option value="eic">Electrical installation certificate (EIC)</option>
@@ -78,24 +88,24 @@ export function ConfirmExtraction({ document, properties }: {
           </select>
         </Field>
 
-        <Field label="Which property is it for?" flagged={flag("property_address")} id="property_id">
-          <select id="property_id" name="property_id" defaultValue={document.propertyId ?? ""} required>
+        <Field label="Which property is it for?" flagged={flag("property_address")} id={fieldId("property_id")}>
+          <select id={fieldId("property_id")} name="property_id" defaultValue={document.propertyId ?? ""} required>
             <option value="">Choose a property</option>
             {properties.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
           </select>
         </Field>
 
-        <Field label="Date it was issued" flagged={flag("issued_on")} id="issued_on">
-          <input id="issued_on" name="issued_on" type="date" defaultValue={document.issuedOn ?? ""} />
+        <Field label="Date it was issued" flagged={flag("issued_on")} id={fieldId("issued_on")}>
+          <input id={fieldId("issued_on")} name="issued_on" type="date" defaultValue={document.issuedOn ?? ""} />
         </Field>
 
-        <Field label="Valid until" flagged={flag("expires_on")} id="expires_on">
-          <input id="expires_on" name="expires_on" type="date" defaultValue={document.expiresOn ?? ""} />
+        <Field label="Valid until" flagged={flag("expires_on")} id={fieldId("expires_on")}>
+          <input id={fieldId("expires_on")} name="expires_on" type="date" defaultValue={document.expiresOn ?? ""} />
         </Field>
 
         {kind === "eicr" || kind === "eic" ? (
-          <Field label="What was the outcome?" flagged={flag("outcome")} id="outcome">
-            <select id="outcome" name="outcome" defaultValue={document.outcome}>
+          <Field label="What was the outcome?" flagged={flag("outcome")} id={fieldId("outcome")}>
+            <select id={fieldId("outcome")} name="outcome" defaultValue={document.outcome}>
               <option value="satisfactory">Satisfactory</option>
               <option value="unsatisfactory">Unsatisfactory</option>
               <option value="unknown">It does not say</option>
@@ -110,8 +120,8 @@ export function ConfirmExtraction({ document, properties }: {
         )}
 
         {kind === "epc" ? (
-          <Field label="EPC rating" flagged={flag("epc_rating")} id="epc_rating">
-            <select id="epc_rating" name="epc_rating" defaultValue={document.epcRating ?? ""}>
+          <Field label="EPC rating" flagged={flag("epc_rating")} id={fieldId("epc_rating")}>
+            <select id={fieldId("epc_rating")} name="epc_rating" defaultValue={document.epcRating ?? ""}>
               <option value="">Not sure</option>
               {["A", "B", "C", "D", "E", "F", "G"].map((r) => <option key={r} value={r}>{r}</option>)}
             </select>

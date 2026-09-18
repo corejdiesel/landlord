@@ -37,8 +37,18 @@ describe("ICS output", () => {
   });
 
   it("escapes the characters the format reserves", () => {
-    expect(escapeIcs("Rent, bills; and\nmore")).toBe("Rent\\, bills\; and\\nmore");
-    expect(escapeIcs("back\\slash")).toBe("back\\\\slash");
+    // `"\;"` in JavaScript is just `";"` — the escape is dropped. The first
+    // version of this shipped an unescaped semicolon, which terminates a
+    // property value in RFC 5545 and corrupts the event. Written out longhand
+    // so the intent is unmistakable.
+    expect(escapeIcs("Rent, bills; and\nmore")).toBe("Rent" + "\\," + " bills" + "\\;" + " and" + "\\n" + "more");
+    expect(escapeIcs("back\\slash")).toBe("back" + "\\\\" + "slash");
+  });
+
+  it("escapes a semicolon, which would otherwise end the property value", () => {
+    const escaped = escapeIcs("Gas check; electrical report");
+    expect(escaped).toContain("\\;");
+    expect(escaped.match(/(?<!\\);/)).toBeNull();
   });
 
   it("folds long lines at 75 octets with a leading space", () => {

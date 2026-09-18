@@ -40,7 +40,7 @@ pnpm demo                 # seed four personas and start with mocks on
 pnpm dev                  # dev server on :3000
 pnpm test                 # vitest (unit + database)
 pnpm test:e2e             # playwright
-pnpm ci                   # lint && typecheck && test && build
+pnpm check                # lint && typecheck && test && build
 ```
 
 Postgres must be running: `pg_ctlcluster 16 main start`.

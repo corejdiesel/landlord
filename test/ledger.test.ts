@@ -1,6 +1,6 @@
 import type { Client } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { clearContext, connect, connectBypassingRls, createAccount, ensureTestSchema, setContext, type Fixture } from "./helpers/db.js";
+import { connect, connectBypassingRls, createAccount, ensureTestSchema, setContext, type Fixture } from "./helpers/db.js";
 
 /**
  * Evidence Ledger.
