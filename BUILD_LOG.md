@@ -140,3 +140,84 @@ the hardening phase.
 
 **Not done yet:** OG image generation per result, and the SEO/Lighthouse pass.
 Both are listed for Phase 12.
+
+---
+
+## Phases 3 to 10 — the product
+
+**Built**
+
+- **Phase 3** — auth (scrypt, hashed session tokens), properties with region
+  resolved from the postcode, entities, tenancies, obligations-driven dashboard.
+- **Phase 4** — Cert Inbox: upload, extraction with per-field confidence,
+  side-by-side confirm, inbound email simulator running the real ingest path.
+- **Phase 5** — Registration Rehearsal and Pack, prefilled, copy buttons,
+  readiness score, print stylesheet.
+- **Phase 6** — Drift Clock persistence, reminder engine, private ICS feed,
+  cron route.
+- **Phase 7** — Defence File and Possession Readiness.
+- **Phase 8** — Household Pulse and Tenant Passport.
+- **Phase 9** — agent workspace, attestation, plan capability map.
+- **Phase 10** — Law Watch, admin review queue, "what changed" feed.
+
+**Tests:** 459 unit and database, 8 end-to-end.
+
+**Bugs found by running it, not by reading it**
+
+Recorded because the pattern is the useful part: almost every one failed
+*silently*, returning zero rows or a reassuring state rather than an error.
+
+1. Sign-in could never have worked. `SECURITY DEFINER` does not escape
+   `FORCE ROW LEVEL SECURITY`, so the login lookup returned nothing and a correct
+   password reported "that email and password do not match". Same root cause
+   recurred three more times: inbound routing, the tenant passport and the pulse
+   lookup. There is now an invariant test over `pg_proc`.
+2. Reminder idempotency was hollow — the unique constraint spanned nullable
+   columns and `NULL <> NULL`, so a scheduler firing twice would have emailed
+   every landlord twice.
+3. Tests exercising a service queried the *development* database, because the
+   service layer reads `DATABASE_URL` while the tests set only
+   `TEST_DATABASE_URL`. They passed by finding nothing.
+4. Tests made real network calls: the Law Watch fetcher needs no key so it
+   defaults to live, and a "no change detected" test passed because every fetch
+   failed.
+5. `create view as select *` freezes its column list, so a column added later was
+   invisible through the view.
+6. Obligation reasons printed ISO dates; a drift item told a landlord their rent
+   was "260000"; a property read "In order" with four obligations outstanding.
+7. Storage path traversal was *sanitised* rather than refused, turning
+   `../../etc/passwd` into a different unintended write.
+8. Several pending documents rendered confirm forms with duplicate element ids,
+   so a label could bind to another document's field.
+9. `"\;"` in JavaScript is just `";"`, so ICS semicolon escaping never happened.
+   The test had encoded the buggy output.
+10. Confirming a drift item wiped its own success message, because the server
+    action re-renders the route.
+
+**How to run it**
+
+```bash
+pg_ctlcluster 16 main start
+./scripts/setup-db.sh
+pnpm install && pnpm db:migrate
+pnpm demo                      # four personas, mocks on, date pinned
+pnpm check                     # lint && typecheck && test && build
+CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome pnpm test:e2e
+```
+
+---
+
+## Phase 12 — hardening
+
+**Built:** the definition-of-done journey as one Playwright test, axe WCAG 2.2 AA
+checks on every main route, ESLint, `SECURITY.md` with the threat model and an
+honest gaps table, legal drafts marked NOT REVIEWED, and `HANDOVER.md`.
+
+**Not done, and listed in HANDOVER:** rate limiting, co-owner invites, CSV
+import, HMO per-room mode, the grounded assistant, OG images, the SEO and
+Lighthouse pass, the retention purge job, account export and deletion, and live
+Stripe checkout.
+
+**Correction to an earlier entry:** the commit for Phase 8 states 442 tests; the
+actual figure at that commit was 423. The counts in this log are from the test
+runner output.
